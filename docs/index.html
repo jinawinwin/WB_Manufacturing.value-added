@@ -81,7 +81,7 @@ const SEGS=[
 ["글로벌 사우스",["IND","BRA","ZAF","IDN","MEX","TUR","EGY","NGA","ARG","SAU"],"글로벌 사우스는 성장 시장이자 지정학적 균형추다. 제조업 기반 확대 속도에 따라 한국 수출 신시장과 산업 협력 파트너로서의 중요도가 커지고 있다."]];
 const CONTS=["아시아","유럽","북미","남미","아프리카","오세아니아"];
 let D,C,BY,metric="usd",mapM="share",cgM="usd",rkSel="글로벌";
-const $=s=>document.querySelector(s),fmtUsd=v=>v==null?"–":(v/1e9).toFixed(1),fmtP=v=>v==null?"–":v.toFixed(2),
+const st=(c,k)=>c["ref_"+k]&&c["ref_"+k]!==D.base_year?`<sup title="${c["ref_"+k]}년 값">*</sup>`:"",$=s=>document.querySelector(s),fmtUsd=v=>v==null?"–":(v/1e9).toFixed(1),fmtP=v=>v==null?"–":v.toFixed(2),
  cg=v=>v==null?"–":`<span class="${v>=0?'pos':'neg'}">${v.toFixed(2)}%</span>`,
  lay=(o={})=>Object.assign({margin:{t:20,r:10,b:40,l:50},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:getComputedStyle(document.body).color}},o);
 function tabs(el,items,cb,cls="tab"){el.innerHTML="";items.forEach((t,i)=>{const b=document.createElement("button");b.className=cls+(i==0?" on":"");b.textContent=Array.isArray(t)?t[1]:t;b.onclick=()=>{[...el.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");cb(Array.isArray(t)?t[0]:t)};el.appendChild(b)})}
@@ -89,7 +89,7 @@ const toggle=(el,items,cb)=>tabs(el,items,cb,"");
 fetch("data.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{D=d;C=d.countries;BY=Object.fromEntries(C.map(c=>[c.iso3,c]));init()}).catch(()=>{document.getElementById("meta").textContent="데이터 파일(data.json)이 없습니다. GitHub Actions → Update World Bank manufacturing data → Run workflow 를 실행하세요."});
 function init(){
  $("#meta").textContent=`기준연도 ${D.base_year} · 데이터 수집 ${D.fetched.slice(0,10)} · 출처: World Bank WDI (NV.IND.MANF.ZS / NV.IND.MANF.CD) · 자동 갱신: 매년 1·7월 10일`;
- $("#baseNote").innerHTML=`<b>기준연도 ${D.base_year}년</b> — 요청하신 2025년 값은 World Bank가 공시한 경우 자동으로 기준연도가 되며, 미공시(국가 100개 미만)면 가장 최근 연도로 표시됩니다.`;
+ $("#baseNote").innerHTML=`<b>기준연도 ${D.base_year}년</b> — 요청하신 2025년 값은 World Bank가 공시한 경우 자동으로 기준연도가 되며, 미공시(국가 100개 미만)면 가장 최근 연도로 표시됩니다. 기준연도 값이 아직 없는 국가는 최근 2년 이내 최신값을 쓰며 <sup>*</sup>로 표시합니다.`;
  const w=C.filter(c=>c.share!=null);const k=BY.KOR||{cagr_usd:{}};
  $("#kpis").innerHTML=[["기준연도",D.base_year],["집계 국가 수",w.length],["한국 제조업 비중",fmtP(k.share)+"%"],["한국 제조업 부가가치",fmtUsd(k.usd)+" B$"],["한국 10년 CAGR",(k.cagr_usd["10"]??"–")+"%"],["세계 순위(US$)",C.filter(c=>c.usd>k.usd).length+1]].map(([a,b])=>`<div class="card kpi"><b>${b}</b><span>${a}</span></div>`).join("");
  toggle($("#mapT"),[["share","비중(%GDP)"],["usd","금액(US$)"]],v=>{mapM=v;drawMap()});drawMap();
@@ -108,9 +108,9 @@ function drawCg(){const ns=[5,10,15,20,25,30],key=cgM=="usd"?"cagr_usd":"cagr_sh
  $("#cgTbl").innerHTML=`<tr><th>국가</th><th></th>${ns.map(n=>`<th>${n}년</th>`).join("")}</tr>`+C.filter(c=>c[key]["10"]!=null||c[key]["5"]!=null).sort((a,b)=>(b.usd||0)-(a.usd||0)).slice(0,60).map(c=>`<tr><td>${c.name}</td><td></td>${ns.map(n=>`<td>${cg(c[key][n])}</td>`).join("")}</tr>`).join("")}
 function drawRk(){let L=C.filter(c=>c[metric]!=null&&(rkSel=="글로벌"||c.continent==rkSel)).sort((a,b)=>b[metric]-a[metric]).slice(0,20);
  Plotly.newPlot("rkBar",[{type:"bar",orientation:"h",y:L.map(c=>c.name).reverse(),x:L.map(c=>metric=="usd"?c.usd/1e9:c.share).reverse(),marker:{color:"#1f6feb"}}],lay({margin:{t:10,r:10,b:40,l:140},xaxis:{title:metric=="usd"?"US$ 십억":"% of GDP"}}),{responsive:true});
- $("#rkTbl").innerHTML=`<tr><th>#</th><th>국가</th><th>비중(%)</th><th>금액(B$)</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}</td><td>${fmtUsd(c.usd)}</td></tr>`).join("")}
+ $("#rkTbl").innerHTML=`<tr><th>#</th><th>국가</th><th>비중(%)</th><th>금액(B$)</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td></tr>`).join("")}
 function lineTraces(list){return list.filter(([i])=>BY[i]).map(([i,n])=>({type:"scatter",mode:"lines",name:n||BY[i].name,x:Object.keys(BY[i].ts),y:Object.values(BY[i].ts)}))}
-function cTable(list){return `<tr><th>국가</th><th></th><th>비중(%)</th><th>금액(B$)</th><th>5년</th><th>10년</th><th>20년</th><th>30년</th></tr>`+list.map(([i,n])=>{const c=BY[i];return c?`<tr><td>${n}</td><td></td><td>${fmtP(c.share)}</td><td>${fmtUsd(c.usd)}</td>${[5,10,20,30].map(y=>`<td>${cg(c.cagr_usd[y])}</td>`).join("")}</tr>`:""}).join("")}
+function cTable(list){return `<tr><th>국가</th><th></th><th>비중(%)</th><th>금액(B$)</th><th>5년</th><th>10년</th><th>20년</th><th>30년</th></tr>`+list.map(([i,n])=>{const c=BY[i];return c?`<tr><td>${n}</td><td></td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td>${[5,10,20,30].map(y=>`<td>${cg(c.cagr_usd[y])}</td>`).join("")}</tr>`:""}).join("")}
 function drawKey(){Plotly.newPlot("keyLine",lineTraces(KEY),lay({yaxis:{title:"% of GDP"}}),{responsive:true});
  $("#keyTbl").innerHTML=cTable(KEY);
  Plotly.newPlot("recLine",lineTraces(REC.map(r=>[r[0],r[1]])),lay({yaxis:{title:"% of GDP"}}),{responsive:true});
@@ -121,7 +121,7 @@ function drawCont(){const S=CONTS.map(n=>[n,...stats(C.filter(c=>c.continent==n)
  $("#contTbl").innerHTML=`<tr><th>대륙</th><th></th><th>평균(%)</th><th>중앙값(%)</th><th>국가수</th></tr>`+S.map(s=>`<tr><td>${s[0]}</td><td></td><td>${fmtP(s[1])}</td><td>${fmtP(s[2])}</td><td>${s[3]}</td></tr>`).join("");
  const sel=$("#contSel");sel.innerHTML=CONTS.map(c=>`<option>${c}</option>`).join("");sel.onchange=listCont;listCont()}
 function listCont(){const L=C.filter(c=>c.continent==$("#contSel").value).sort((a,b)=>(b.share??-1)-(a.share??-1));
- $("#contList").innerHTML=`<tr><th>#</th><th>국가</th><th>비중(%)</th><th>금액(B$)</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}</td><td>${fmtUsd(c.usd)}</td></tr>`).join("")}
+ $("#contList").innerHTML=`<tr><th>#</th><th>국가</th><th>비중(%)</th><th>금액(B$)</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td></tr>`).join("")}
 function drawSeg(){const body=$("#segBody");body.innerHTML=SEGS.map((s,i)=>`<div class="seg ${i?'':'on'}" id="sg${i}"><div class="note"><b>왜 중요한가?</b> ${s[2]}</div>
  <div class="grid"><div id="sgBar${i}" style="height:380px"></div><div id="sgLine${i}" style="height:380px"></div></div><div class="card scroll"><table id="sgTbl${i}"></table></div></div>`).join("");
  tabs($("#segTabs"),SEGS.map((s,i)=>[i,s[0]]),i=>{document.querySelectorAll(".seg").forEach(e=>e.classList.toggle("on",e.id=="sg"+i));setTimeout(()=>window.dispatchEvent(new Event("resize")),50)});

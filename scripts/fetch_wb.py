@@ -47,7 +47,7 @@ def continent(iso3):
     try:
         return CONT_KO[pc.country_alpha2_to_continent_code(pc.country_alpha3_to_country_alpha2(iso3))]
     except Exception:
-        return {"XKX": "유럽", "TLS": "아시아"}.get(iso3, "기타")
+        return {"XKX": "유럽", "TLS": "아시아", "CHI": "유럽", "SXM": "북미"}.get(iso3, "기타")
 
 def build(raw):
     cm = pd.DataFrame(raw["countries"]).set_index("iso3")
@@ -62,24 +62,31 @@ def build(raw):
     cov = share.notna().sum()
     base = int(max(y for y in cov.index if cov[y] >= 100 and y <= dt.date.today().year - 1))
 
-    def cagr(df, n):
-        y0 = base - n
-        if y0 not in df.columns: return pd.Series(dtype=float)
-        a, b = df[y0], df[base]
-        ok = (a > 0) & (b > 0)
-        return ((b[ok] / a[ok]) ** (1 / n) - 1) * 100
+    LAG = 2  # 기준연도 값이 미공시인 국가는 최근 2년 이내 최신값 사용 (ref_* 필드에 실제 연도 표시)
+    def ref_year(df, iso):
+        if iso not in df.index: return None
+        for y in range(base, base - LAG - 1, -1):
+            if y in df.columns and pd.notna(df.loc[iso, y]): return y
+        return None
 
-    cg = {k: {n: cagr(df, n) for n in CAGR_YEARS} for k, df in wide.items()}
+    def cagr(df, iso, n, ref):
+        if ref is None or iso not in df.index or (ref - n) not in df.columns: return None
+        a, b = df.loc[iso, ref - n], df.loc[iso, ref]
+        if pd.isna(a) or pd.isna(b) or a <= 0 or b <= 0: return None
+        return round(float(((b / a) ** (1 / n) - 1) * 100), 2)
+
     countries = []
     for iso, m in cm.iterrows():
+        rs, ru = ref_year(share, iso), ref_year(usd, iso)
         def v(df, y):
             x = df.loc[iso, y] if iso in df.index and y in df.columns else None
             return None if x is None or pd.isna(x) else round(float(x), 3)
         countries.append({
             "iso3": iso, "name": m["name"], "continent": m["continent"], "region": m["region"],
-            "share": v(share, base), "usd": v(usd, base),
-            "cagr_usd": {str(n): (round(float(cg["usd"][n][iso]), 2) if iso in cg["usd"][n].index else None) for n in CAGR_YEARS},
-            "cagr_share": {str(n): (round(float(cg["share"][n][iso]), 2) if iso in cg["share"][n].index else None) for n in CAGR_YEARS},
+            "share": v(share, rs) if rs else None, "usd": v(usd, ru) if ru else None,
+            "ref_share": rs, "ref_usd": ru,
+            "cagr_usd": {str(n): cagr(usd, iso, n, ru) for n in CAGR_YEARS},
+            "cagr_share": {str(n): cagr(share, iso, n, rs) for n in CAGR_YEARS},
             "ts": {str(y): v(share, y) for y in share.columns if y >= 1990 and v(share, y) is not None},
             "ts_usd": {str(y): v(usd, y) for y in usd.columns if y >= 1990 and v(usd, y) is not None},
         })
