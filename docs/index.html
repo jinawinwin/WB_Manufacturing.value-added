@@ -89,7 +89,7 @@ const toggle=(el,items,cb)=>tabs(el,items,cb,"");
 fetch("data.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{D=d;C=d.countries;BY=Object.fromEntries(C.map(c=>[c.iso3,c]));init()}).catch(()=>{document.getElementById("meta").textContent="데이터 파일(data.json)이 없습니다. GitHub Actions → Update World Bank manufacturing data → Run workflow 를 실행하세요."});
 function init(){
  $("#meta").textContent=`기준연도 ${D.base_year} · 데이터 수집 ${D.fetched.slice(0,10)} · 출처: World Bank WDI (NV.IND.MANF.ZS / NV.IND.MANF.CD) · 자동 갱신: 매년 1·7월 10일`;
- $("#baseNote").innerHTML=`<b>기준연도 ${D.base_year}년</b> — 요청하신 2025년 값은 World Bank가 공시한 경우 자동으로 기준연도가 되며, 미공시(국가 100개 미만)면 가장 최근 연도로 표시됩니다. 기준연도 값이 아직 없는 국가는 최근 2년 이내 최신값을 쓰며 <sup>*</sup>로 표시합니다.`;
+ $("#baseNote").innerHTML=`<b>기준연도 ${D.base_year}년</b> — 요청하신 2025년 값은 World Bank가 공시한 경우 자동으로 기준연도가 되며, 미공시(국가 100개 미만)면 가장 최근 연도로 표시됩니다. 기준연도 값이 아직 없는 국가는 최근 5년 이내 최신값을 쓰며 <sup>*</sup>로 표시합니다.`;
  const w=C.filter(c=>c.share!=null);const k=BY.KOR||{cagr_usd:{}};
  $("#kpis").innerHTML=[["기준연도",D.base_year],["집계 국가 수",w.length],["한국 제조업 비중",fmtP(k.share)+"%"],["한국 제조업 부가가치",fmtUsd(k.usd)+" B$"],["한국 10년 CAGR",(k.cagr_usd["10"]??"–")+"%"],["세계 순위(US$)",C.filter(c=>c.usd>k.usd).length+1]].map(([a,b])=>`<div class="card kpi"><b>${b}</b><span>${a}</span></div>`).join("");
  toggle($("#mapT"),[["share","비중(%GDP)"],["usd","금액(US$)"]],v=>{mapM=v;drawMap()});drawMap();

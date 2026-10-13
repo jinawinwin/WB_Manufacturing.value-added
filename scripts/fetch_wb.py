@@ -62,7 +62,7 @@ def build(raw):
     cov = share.notna().sum()
     base = int(max(y for y in cov.index if cov[y] >= 100 and y <= dt.date.today().year - 1))
 
-    LAG = 2  # 기준연도 값이 미공시인 국가는 최근 2년 이내 최신값 사용 (ref_* 필드에 실제 연도 표시)
+    LAG = 5  # 기준연도 값이 미공시인 국가는 최근 5년 이내 최신값 사용 (ref_* 필드에 실제 연도 표시)
     def ref_year(df, iso):
         if iso not in df.index: return None
         for y in range(base, base - LAG - 1, -1):
