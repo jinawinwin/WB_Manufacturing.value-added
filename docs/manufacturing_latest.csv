@@ -31,7 +31,7 @@ BRN,Brunei Darussalam,아시아,East Asia & Pacific,9.935,1493366027.879,12.73,2
 BTN,Bhutan,아시아,South Asia,6.618,221476264.132,5.72,3.65,5.38,7.8,7.52,7.6
 BWA,Botswana,아프리카,Sub-Saharan Africa ,5.691,1134163747.244,6.02,1.47,0.36,4.28,5.12,5.14
 CAF,Central African Republic,아프리카,Sub-Saharan Africa ,17.951,458742463.501,2.64,2.56,,,,
-CAN,Canada,북미,North America,,,,,,,,
+CAN,Canada,북미,North America,9.324,205190749695.971,4.46,0.81,0.9,2.64,2.67,
 CHE,Switzerland,유럽,Europe & Central Asia,18.925,197492396657.268,6.52,4.59,3.87,4.59,5.64,3.62
 CHI,Channel Islands,유럽,Europe & Central Asia,0.807,100972482.378,4.79,,,,,
 CHL,Chile,남미,Latin America & Caribbean ,8.954,31997296911.192,6.9,2.41,2.7,3.63,4.04,2.74
@@ -39,12 +39,12 @@ CHN,China,아시아,East Asia & Pacific,24.734,4822731276479.18,4.68,4.18,6.32,9
 CIV,Cote d'Ivoire,아프리카,Sub-Saharan Africa ,12.287,12258978814.787,10.05,8.88,9.49,8.34,7.86,6.9
 CMR,Cameroon,아프리카,Sub-Saharan Africa ,14.567,8585060591.148,9.82,6.39,5.23,5.52,7.07,5.32
 COD,"Congo, Dem. Rep.",아프리카,Sub-Saharan Africa ,7.895,7187046625.33,4.9,0.61,11.88,6.9,5.49,
-COG,"Congo, Rep.",아프리카,Sub-Saharan Africa ,,,,,,,,
+COG,"Congo, Rep.",아프리카,Sub-Saharan Africa ,12.853,1474092994.843,7.22,7.76,8.62,13.74,8.97,6.33
 COL,Colombia,남미,Latin America & Caribbean ,9.895,45261991593.362,9.31,2.2,0.82,3.38,4.83,4.08
 COM,Comoros,아프리카,Sub-Saharan Africa ,7.17,130124910.547,10.6,6.39,4.75,,,
 CPV,Cabo Verde,아프리카,Sub-Saharan Africa ,5.191,158656311.213,10.93,6.26,4.54,4.75,4.73,3.18
 CRI,Costa Rica,북미,Latin America & Caribbean ,13.577,13971885129.955,11.81,8.03,6.54,7.42,6.77,6.42
-CUB,Cuba,북미,Latin America & Caribbean ,10.677,,,,,,,
+CUB,Cuba,북미,Latin America & Caribbean ,10.677,12020000000.0,-1.54,2.59,4.83,4.46,5.08,6.08
 CUW,Curacao,북미,Latin America & Caribbean ,2.92,103976256.983,-7.54,-8.32,-4.82,-2.24,,
 CYM,Cayman Islands,북미,Latin America & Caribbean ,0.866,67210507.882,4.6,5.95,4.4,,,
 CYP,Cyprus,아시아,Europe & Central Asia,4.392,1810538081.329,4.7,7.88,2.21,1.85,3.25,2.18
@@ -71,7 +71,7 @@ GBR,United Kingdom,유럽,Europe & Central Asia,7.678,307302176387.788,4.43,1.06
 GEO,Georgia,아시아,Europe & Central Asia,7.987,3046343308.102,15.08,8.04,6.85,7.08,8.75,
 GHA,Ghana,아프리카,Sub-Saharan Africa ,10.107,11542668021.64,8.52,7.72,12.19,13.42,13.87,10.34
 GIB,Gibraltar,유럽,Europe & Central Asia,,,,,,,,
-GIN,Guinea,아프리카,Sub-Saharan Africa ,,,,,,,,
+GIN,Guinea,아프리카,Sub-Saharan Africa ,12.745,2537658127.788,19.65,12.18,8.78,16.9,12.58,9.94
 GMB,"Gambia, The",아프리카,Sub-Saharan Africa ,1.454,34973175.337,-12.63,-7.95,-4.52,-1.83,-2.02,-1.78
 GNB,Guinea-Bissau,아프리카,Sub-Saharan Africa ,8.599,217388375.6,14.58,7.85,6.42,6.54,8.23,5.09
 GNQ,Equatorial Guinea,아프리카,Sub-Saharan Africa ,22.306,2860295894.333,8.16,1.97,-1.2,,,
@@ -107,7 +107,7 @@ KNA,St. Kitts and Nevis,북미,Latin America & Caribbean ,3.959,46851851.852,0.8
 KOR,"Korea, Rep.",아시아,East Asia & Pacific,27.426,513523784647.99,2.76,1.83,2.89,3.59,4.8,4.09
 KWT,Kuwait,아시아,"Middle East, North Africa, Afghanistan & Pakistan",7.743,12172421773.203,3.81,4.29,3.86,3.72,6.36,4.81
 LAO,Lao PDR,아시아,East Asia & Pacific,9.114,1668145078.635,2.72,3.51,5.1,9.66,10.09,9.64
-LBN,Lebanon,아시아,"Middle East, North Africa, Afghanistan & Pakistan",,,,,,,,
+LBN,Lebanon,아시아,"Middle East, North Africa, Afghanistan & Pakistan",1.427,330053453.237,-40.08,-19.87,-9.93,-8.61,-6.38,
 LBR,Liberia,아프리카,Sub-Saharan Africa ,,,,,,,,
 LBY,Libya,아프리카,"Middle East, North Africa, Afghanistan & Pakistan",,,,,,,,
 LCA,St. Lucia,북미,Latin America & Caribbean ,3.576,95000000.0,16.14,6.1,4.98,,,
@@ -161,7 +161,7 @@ PRK,"Korea, Dem. People's Rep.",아시아,East Asia & Pacific,,,,,,,,
 PRT,Portugal,유럽,Europe & Central Asia,11.296,39157384754.114,7.12,4.85,2.35,2.31,3.19,2.47
 PRY,Paraguay,남미,Latin America & Caribbean ,19.427,9573481296.642,7.63,3.13,4.35,8.34,8.03,6.83
 PSE,West Bank and Gaza,아시아,"Middle East, North Africa, Afghanistan & Pakistan",11.318,1812800000.0,-1.19,1.88,5.01,7.15,5.71,4.15
-PYF,French Polynesia,오세아니아,East Asia & Pacific,,,,,,,,
+PYF,French Polynesia,오세아니아,East Asia & Pacific,4.73,263669560.585,-0.58,-0.53,-0.64,,,
 QAT,Qatar,아시아,"Middle East, North Africa, Afghanistan & Pakistan",7.879,16983791208.791,8.25,1.65,2.8,6.99,12.15,11.3
 ROU,Romania,유럽,Europe & Central Asia,11.824,50688289900.459,4.91,3.5,1.64,4.52,8.01,5.96
 RUS,Russian Federation,유럽,Europe & Central Asia,13.656,349767677482.14,11.82,7.55,3.96,5.5,,
@@ -183,7 +183,7 @@ SVK,Slovak Republic,유럽,Europe & Central Asia,16.194,25025198668.811,5.78,4.0
 SVN,Slovenia,유럽,Europe & Central Asia,18.605,14818337835.856,6.23,5.67,3.89,3.52,5.01,4.0
 SWE,Sweden,유럽,Europe & Central Asia,12.453,83310102573.219,3.88,1.9,0.84,1.15,1.89,1.57
 SWZ,Eswatini,아프리카,Sub-Saharan Africa ,28.061,1448153071.949,5.79,1.57,0.16,1.54,3.75,3.24
-SXM,Sint Maarten (Dutch part),북미,Latin America & Caribbean ,,,,,,,,
+SXM,Sint Maarten (Dutch part),북미,Latin America & Caribbean ,1.171,15838156.425,-13.7,1.03,,,,
 SYC,Seychelles,아프리카,Sub-Saharan Africa ,5.408,129092824.018,6.94,4.4,3.42,2.4,0.36,2.35
 SYR,Syrian Arab Republic,아시아,"Middle East, North Africa, Afghanistan & Pakistan",,,,,,,,
 TCA,Turks and Caicos Islands,북미,Latin America & Caribbean ,0.447,7801000.0,7.62,2.56,-3.56,-1.84,,
@@ -202,7 +202,7 @@ TZA,Tanzania,아프리카,Sub-Saharan Africa ,8.399,6637421604.27,7.6,4.79,6.89,
 UGA,Uganda,아프리카,Sub-Saharan Africa ,14.474,8971587117.986,8.6,4.64,3.65,14.05,12.82,11.33
 UKR,Ukraine,유럽,Europe & Central Asia,8.319,17821420946.962,2.41,5.1,-0.25,0.38,4.72,0.59
 URY,Uruguay,남미,Latin America & Caribbean ,9.957,8498386073.324,10.31,1.07,2.73,6.14,4.46,2.72
-USA,United States,북미,North America,,,,,,,,
+USA,United States,북미,North America,10.525,2497131582000.0,3.54,2.97,2.23,2.67,,
 UZB,Uzbekistan,아시아,Europe & Central Asia,20.772,30542340852.927,16.26,8.93,11.76,,,
 VCT,St. Vincent and the Grenadines,북미,Latin America & Caribbean ,3.934,49381481.481,9.55,2.73,2.25,2.59,3.23,2.74
 VEN,"Venezuela, RB",남미,Latin America & Caribbean ,,,,,,,,
