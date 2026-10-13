@@ -39,7 +39,7 @@ def crawl():
         rows = paged(f"/country/all/indicator/{code}?date=1960:{dt.date.today().year}")
         series[key] = [{"iso3": r["countryiso3code"], "year": int(r["date"]), "value": r["value"]}
                        for r in rows if r["value"] is not None and r["countryiso3code"]]
-    return {"countries": ctry, "series": series, "fetched": dt.datetime.utcnow().isoformat() + "Z"}
+    return {"countries": ctry, "series": series, "fetched": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
 
 CONT_KO = {"AF": "아프리카", "AS": "아시아", "EU": "유럽", "NA": "북미", "SA": "남미", "OC": "오세아니아"}
 def continent(iso3):
@@ -91,9 +91,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--offline")
     a = ap.parse_args()
     raw = json.load(open(a.offline)) if a.offline else crawl()
-    if not a.offline: (ROOT / "data/raw.json").write_text(json.dumps(raw))
     out = build(raw)
-    (ROOT / "docs").mkdir(exist_ok=True)
+    (ROOT / "docs").mkdir(parents=True, exist_ok=True)
     (ROOT / "docs/data.json").write_text(json.dumps(out, ensure_ascii=False))
     rows = [{k: c[k] for k in ("iso3", "name", "continent", "region", "share", "usd")} |
             {f"cagr_usd_{n}y": c["cagr_usd"][str(n)] for n in CAGR_YEARS} for c in out["countries"]]
