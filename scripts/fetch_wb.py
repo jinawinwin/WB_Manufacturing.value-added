@@ -41,13 +41,13 @@ def crawl():
                        for r in rows if r["value"] is not None and r["countryiso3code"]]
     return {"countries": ctry, "series": series, "fetched": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
 
-CONT_KO = {"AF": "아프리카", "AS": "아시아", "EU": "유럽", "NA": "북미", "SA": "남미", "OC": "오세아니아"}
+CONT_KO = {"AF": "Africa", "AS": "Asia", "EU": "Europe", "NA": "North America", "SA": "South America", "OC": "Oceania"}
 def continent(iso3):
     import pycountry_convert as pc
     try:
         return CONT_KO[pc.country_alpha2_to_continent_code(pc.country_alpha3_to_country_alpha2(iso3))]
     except Exception:
-        return {"XKX": "유럽", "TLS": "아시아", "CHI": "유럽", "SXM": "북미"}.get(iso3, "기타")
+        return {"XKX": "Europe", "TLS": "Asia", "CHI": "Europe", "SXM": "North America"}.get(iso3, "Other")
 
 def build(raw):
     cm = pd.DataFrame(raw["countries"]).set_index("iso3")
@@ -58,7 +58,7 @@ def build(raw):
         df = df[df.iso3.isin(cm.index)]
         wide[k] = df.pivot_table(index="iso3", columns="year", values="value")
     share, usd = wide["share"], wide["usd"]
-    # 기준연도: 데이터가 100개국 이상인 가장 최근 연도 (2025가 아직 미공시면 자동 후퇴)
+    # Base year: latest year with >=100 countries reporting
     cov = share.notna().sum()
     base = int(max(y for y in cov.index if cov[y] >= 100 and y <= dt.date.today().year - 1))
 

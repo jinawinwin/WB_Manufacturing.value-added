@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>제조업 부가가치 대시보드</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.2/plotly.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<title>Manufacturing, value added — Dashboard</title>
+<script src="lib/plotly.min.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<script src="lib/html2pdf.bundle.min.js"></script>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--mut:#6b7686;--acc:#1f6feb;--line:#e3e7ee}
 @media(prefers-color-scheme:dark){:root{--bg:#10151c;--card:#18202a;--ink:#e8edf3;--mut:#93a0b1;--acc:#5aa2ff;--line:#2a3441}}
@@ -27,33 +27,33 @@ select,.toggle button{font:inherit;padding:4px 8px;border:1px solid var(--line);
 #badge button{border:0;background:var(--acc);color:#fff;border-radius:18px;padding:8px 14px;cursor:pointer;font:inherit;font-weight:600}
 .pos{color:#1a9850}.neg{color:#d73027}
 </style></head><body>
-<header><h1>🏭 제조업 부가가치 대시보드</h1>
-<div class="sub" id="meta">로딩 중…</div></header>
+<header><h1>🏭 Manufacturing, value added</h1>
+<div class="sub" id="meta">Loading…</div></header>
 <main>
 <div class="tabs" id="mainTabs">
-<button class="tab on" data-t="overview">개요</button><button class="tab" data-t="key">주요 국가</button>
-<button class="tab" data-t="cont">대륙별</button><button class="tab" data-t="seg">이슈별 세그먼트</button></div>
+<button class="tab on" data-t="overview">Overview</button><button class="tab" data-t="key">Key Countries</button>
+<button class="tab" data-t="cont">Continents</button><button class="tab" data-t="seg">Issue Segments</button></div>
 
 <section class="pane on" id="overview">
  <div class="note" id="baseNote"></div>
  <div class="kpis" id="kpis"></div>
- <div class="card"><b>(1) 기준연도 제조업 부가가치 — 세계 지도</b> <span class="toggle" id="mapT"></span><div id="map" style="height:430px"></div></div>
- <div class="card"><b>(2) 기간별 CAGR</b> (현재가 US$ 기준, 기준연도 N년 전 대비) <span class="toggle" id="cgT"></span>
+ <div class="card"><b>(1) Manufacturing, value added — World map</b> <span class="toggle" id="mapT"></span><div id="map" style="height:430px"></div></div>
+ <div class="card"><b>(2) CAGR</b> (5 / 10 / 15 / 20 / 25 / 30 years to base year) <span class="toggle" id="cgT"></span>
   <div class="grid"><div id="cgBar" style="height:380px"></div><div class="scroll"><table id="cgTbl"></table></div></div></div>
- <div class="card"><b>(3) 상위 20개 국가</b> <span class="toggle" id="rkMetric"></span>
+ <div class="card"><b>(3) Top 20 countries</b> <span class="toggle" id="rkMetric"></span>
   <div class="tabs sub-tabs" id="rkTabs"></div>
   <div class="grid"><div id="rkBar" style="height:520px"></div><div class="scroll" style="max-height:520px"><table id="rkTbl"></table></div></div></div>
 </section>
 
 <section class="pane" id="key">
- <div class="card"><b>주요 7개국</b> — GDP 대비 제조업 비중 추이 (%)<div id="keyLine" style="height:380px"></div></div>
+ <div class="card"><b>Key countries</b> — Manufacturing, value added (% of GDP)<div id="keyLine" style="height:380px"></div></div>
  <div class="card"><div class="scroll"><table id="keyTbl"></table></div></div>
- <div class="card"><b>🔎 추가 관찰 추천국</b> (한국 관점)<div id="recLine" style="height:340px"></div><div id="recList"></div></div>
+ <div class="card"><b>🔎 Additional countries to watch</b> (Korea perspective)<div id="recLine" style="height:340px"></div><div id="recList"></div></div>
 </section>
 
 <section class="pane" id="cont">
- <div class="card"><b>대륙별 평균·중앙값</b> (GDP 대비 %)<div class="grid"><div id="contBar" style="height:340px"></div><table id="contTbl"></table></div></div>
- <div class="card"><b>대륙별 전체 국가</b> <select id="contSel"></select><div class="scroll"><table id="contList"></table></div></div>
+ <div class="card"><b>Mean and median by continent</b> (% of GDP)<div class="grid"><div id="contBar" style="height:340px"></div><table id="contTbl"></table></div></div>
+ <div class="card"><b>All countries by continent</b> <select id="contSel"></select><div class="scroll"><table id="contList"></table></div></div>
 </section>
 
 <section class="pane" id="seg">
@@ -61,68 +61,68 @@ select,.toggle button{font:inherit;padding:4px 8px;border:1px solid var(--line);
 </section>
 </main>
 
-<div id="badge"><button id="bCsv">⬇ CSV</button><button id="bXls">⬇ Excel</button><button id="bPdf">⬇ 보고서 PDF</button></div>
+<div id="badge"><button id="bCsv">⬇ CSV</button><button id="bXls">⬇ Excel</button><button id="bPdf">⬇ Report PDF</button></div>
 <div id="report" style="position:absolute;left:-9999px;width:760px;background:#fff;color:#111;padding:20px"></div>
 
 <script>
-const KEY=[["KOR","한국"],["USA","미국"],["CHN","중국"],["FRA","프랑스"],["DEU","독일"],["GBR","영국"],["JPN","일본"]];
-const REC=[["VNM","베트남","한국 제2의 교역·투자 상대국. 삼성 등 생산기지가 집중된 대표 대체 생산거점."],
-["IND","인도","중국 대안 생산기지로 부상, 높은 성장잠재력과 대규모 내수시장."],
-["MEX","멕시코","USMCA 기반 니어쇼어링 수혜국. 한국 완성차·가전 업체 진출 확대."],
-["IDN","인도네시아","배터리 핵심 광물(니켈) 보유, 한국 배터리·소재 기업 투자 집중."],
-["POL","폴란드","유럽 배터리·방산 생산기지, 한국 기업 투자·수출 확대 거점."],
-["SGP","싱가포르","반도체 장비·아시아 무역금융 허브, 한국과 첨단 공급망 연계."]];
+const KEY=[["KOR","Korea, Rep."],["USA","United States"],["CHN","China"],["FRA","France"],["DEU","Germany"],["GBR","United Kingdom"],["JPN","Japan"]];
+const REC=[["VNM","Viet Nam","한국 제2의 교역·투자 상대국. 삼성 등 생산기지가 집중된 대표 대체 생산거점."],
+["IND","India","중국 대안 생산기지로 부상, 높은 성장잠재력과 대규모 내수시장."],
+["MEX","Mexico","USMCA 기반 니어쇼어링 수혜국. 한국 완성차·가전 업체 진출 확대."],
+["IDN","Indonesia","배터리 핵심 광물(니켈) 보유, 한국 배터리·소재 기업 투자 집중."],
+["POL","Poland","유럽 배터리·방산 생산기지, 한국 기업 투자·수출 확대 거점."],
+["SGP","Singapore","반도체 장비·아시아 무역금융 허브, 한국과 첨단 공급망 연계."]];
 const SEGS=[
-["생산기지 이전·공급망 다변화",["IND","VNM","IDN","MEX","THA","MYS","BGD","PHL","TUR","POL"],"탈중국 흐름 속에서 인도·베트남·인도네시아가 새 생산기지로 부상했다. 풍부한 노동력과 내수시장을 갖춰 한국 기업의 투자와 중간재 수출 기회가 커지고 있다."],
-["공급망 재편",["USA","CHN","MEX","CAN","DEU","JPN","KOR","VNM","IND","POL"],"미중 관세·수출통제와 프렌드쇼어링으로 교역 구조가 바뀌고 있다. 핵심 제조국의 비중 변화는 한국 수출시장과 부품 조달망의 재편 방향을 보여준다."],
-["반도체·첨단산업 공급망",["KOR","JPN","CHN","USA","NLD","DEU","SGP","MYS","ISR","IRL"],"반도체·배터리 등 첨단산업은 소수 국가에 집중돼 있다. 한국의 핵심 경쟁·협력국을 비교해 기술 의존도와 공급망 리스크를 점검할 수 있다. (대만은 WB 미제공)"],
-["아시아 금융·무역 허브",["SGP","HKG","MAC","ARE","MYS","JPN","KOR","THA","VNM"],"싱가포르·홍콩 등은 무역금융과 물류의 중계 거점이다. 제조업 비중은 낮아도 한국 기업의 아시아 역내 조달·결제·재수출 전략에서 핵심 역할을 한다."],
-["자원·에너지·원자재",["SAU","RUS","AUS","BRA","CAN","IDN","CHL","ZAF","KAZ","NOR"],"원자재 수출국은 제조업 비중이 낮은 편이지만 에너지·광물 가격과 공급을 좌우한다. 한국의 제조 원가와 배터리·철강 등 소재 조달 안정성에 직접 영향을 준다."],
-["글로벌 사우스",["IND","BRA","ZAF","IDN","MEX","TUR","EGY","NGA","ARG","SAU"],"글로벌 사우스는 성장 시장이자 지정학적 균형추다. 제조업 기반 확대 속도에 따라 한국 수출 신시장과 산업 협력 파트너로서의 중요도가 커지고 있다."]];
-const CONTS=["아시아","유럽","북미","남미","아프리카","오세아니아"];
-let D,C,BY,metric="usd",mapM="share",cgM="usd",rkSel="글로벌";
-const st=(c,k)=>c["ref_"+k]&&c["ref_"+k]!==D.base_year?`<sup title="${c["ref_"+k]}년 값">*</sup>`:"",$=s=>document.querySelector(s),fmtUsd=v=>v==null?"–":(v/1e9).toFixed(1),fmtP=v=>v==null?"–":v.toFixed(2),
+["Production Relocation & Supply Chain Diversification",["IND","VNM","IDN","MEX","THA","MYS","BGD","PHL","TUR","POL"],"탈중국 흐름 속에서 인도·베트남·인도네시아가 새 생산기지로 부상했다. 풍부한 노동력과 내수시장을 갖춰 한국 기업의 투자와 중간재 수출 기회가 커지고 있다."],
+["Supply Chain Restructuring",["USA","CHN","MEX","CAN","DEU","JPN","KOR","VNM","IND","POL"],"미중 관세·수출통제와 프렌드쇼어링으로 교역 구조가 바뀌고 있다. 핵심 제조국의 비중 변화는 한국 수출시장과 부품 조달망의 재편 방향을 보여준다."],
+["Semiconductor & Advanced Industry Supply Chain",["KOR","JPN","CHN","USA","NLD","DEU","SGP","MYS","ISR","IRL"],"반도체·배터리 등 첨단산업은 소수 국가에 집중돼 있다. 한국의 핵심 경쟁·협력국을 비교해 기술 의존도와 공급망 리스크를 점검할 수 있다. (Taiwan is not covered by World Bank data)"],
+["Asian Financial & Trade Hubs",["SGP","HKG","MAC","ARE","MYS","JPN","KOR","THA","VNM"],"싱가포르·홍콩 등은 무역금융과 물류의 중계 거점이다. 제조업 비중은 낮아도 한국 기업의 아시아 역내 조달·결제·재수출 전략에서 핵심 역할을 한다."],
+["Resources, Energy & Raw Materials",["SAU","RUS","AUS","BRA","CAN","IDN","CHL","ZAF","KAZ","NOR"],"원자재 수출국은 제조업 비중이 낮은 편이지만 에너지·광물 가격과 공급을 좌우한다. 한국의 제조 원가와 배터리·철강 등 소재 조달 안정성에 직접 영향을 준다."],
+["Global South",["IND","BRA","ZAF","IDN","MEX","TUR","EGY","NGA","ARG","SAU"],"글로벌 사우스는 성장 시장이자 지정학적 균형추다. 제조업 기반 확대 속도에 따라 한국 수출 신시장과 산업 협력 파트너로서의 중요도가 커지고 있다."]];
+const CONTS=["Asia","Europe","North America","South America","Africa","Oceania"];
+let D,C,BY,metric="usd",mapM="share",cgM="usd",rkSel="Global";
+const st=(c,k)=>c["ref_"+k]&&c["ref_"+k]!==D.base_year?`<sup title="${c["ref_"+k]} value">*</sup>`:"",$=s=>document.querySelector(s),fmtUsd=v=>v==null?"–":(v/1e9).toFixed(1),fmtP=v=>v==null?"–":v.toFixed(2),
  cg=v=>v==null?"–":`<span class="${v>=0?'pos':'neg'}">${v.toFixed(2)}%</span>`,
  lay=(o={})=>Object.assign({margin:{t:20,r:10,b:40,l:50},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:getComputedStyle(document.body).color}},o);
 function tabs(el,items,cb,cls="tab"){el.innerHTML="";items.forEach((t,i)=>{const b=document.createElement("button");b.className=cls+(i==0?" on":"");b.textContent=Array.isArray(t)?t[1]:t;b.onclick=()=>{[...el.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");cb(Array.isArray(t)?t[0]:t)};el.appendChild(b)})}
 const toggle=(el,items,cb)=>tabs(el,items,cb,"");
-fetch("data.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{D=d;C=d.countries;BY=Object.fromEntries(C.map(c=>[c.iso3,c]));init()}).catch(()=>{document.getElementById("meta").textContent="데이터 파일(data.json)이 없습니다. GitHub Actions → Update World Bank manufacturing data → Run workflow 를 실행하세요."});
+fetch("data.json").then(r=>{if(!r.ok)throw new Error("data.json not found — run GitHub Actions: Update World Bank manufacturing data");return r.json()}).then(d=>{D=d;C=d.countries;BY=Object.fromEntries(C.map(c=>[c.iso3,c]));if(typeof Plotly==="undefined")throw new Error("lib/plotly.min.js failed to load");init()}).catch(e=>{console.error(e);document.getElementById("meta").textContent="Error: "+e.message});
 function init(){
- $("#meta").textContent=`기준연도 ${D.base_year} · 데이터 수집 ${D.fetched.slice(0,10)} · 출처: World Bank WDI (NV.IND.MANF.ZS / NV.IND.MANF.CD) · 자동 갱신: 매년 1·7월 10일`;
- $("#baseNote").innerHTML=`<b>기준연도 ${D.base_year}년</b> — 요청하신 2025년 값은 World Bank가 공시한 경우 자동으로 기준연도가 되며, 미공시(국가 100개 미만)면 가장 최근 연도로 표시됩니다. 기준연도 값이 아직 없는 국가는 최근 5년 이내 최신값을 쓰며 <sup>*</sup>로 표시합니다.`;
+ $("#meta").textContent=`Base year ${D.base_year} · Fetched ${D.fetched.slice(0,10)} · Source: World Bank WDI (NV.IND.MANF.ZS / NV.IND.MANF.CD) · Auto-update: Jan 10 & Jul 10`;
+ $("#baseNote").innerHTML=`<b>Base year ${D.base_year}</b> — latest year with data for 100+ countries. Where a country has no ${D.base_year} value, its latest value within the previous 5 years is used and marked <sup>*</sup> (hover for the year). CAGR for such countries is measured to that year.`;
  const w=C.filter(c=>c.share!=null);const k=BY.KOR||{cagr_usd:{}};
- $("#kpis").innerHTML=[["기준연도",D.base_year],["집계 국가 수",w.length],["한국 제조업 비중",fmtP(k.share)+"%"],["한국 제조업 부가가치",fmtUsd(k.usd)+" B$"],["한국 10년 CAGR",(k.cagr_usd["10"]??"–")+"%"],["세계 순위(US$)",C.filter(c=>c.usd>k.usd).length+1]].map(([a,b])=>`<div class="card kpi"><b>${b}</b><span>${a}</span></div>`).join("");
- toggle($("#mapT"),[["share","비중(%GDP)"],["usd","금액(US$)"]],v=>{mapM=v;drawMap()});drawMap();
- toggle($("#cgT"),[["usd","금액(US$) CAGR"],["share","비중 변화율"]],v=>{cgM=v;drawCg()});drawCg();
- toggle($("#rkMetric"),[["usd","금액(US$)"],["share","비중(%GDP)"]],v=>{metric=v;drawRk()});
- tabs($("#rkTabs"),["글로벌",...CONTS],v=>{rkSel=v;drawRk()});drawRk();
+ $("#kpis").innerHTML=[["Base year",D.base_year],["Countries with data",w.length],["Korea, % of GDP",fmtP(k.share)+"%"],["Korea, current US$ bn",fmtUsd(k.usd)],["Korea, 10Y CAGR",(k.cagr_usd["10"]??"–")+"%"],["Korea, world rank (US$)",C.filter(c=>c.usd>k.usd).length+1]].map(([a,b])=>`<div class="card kpi"><b>${b}</b><span>${a}</span></div>`).join("");
+ toggle($("#mapT"),[["share","% of GDP"],["usd","Current US$"]],v=>{mapM=v;drawMap()});drawMap();
+ toggle($("#cgT"),[["usd","CAGR of current US$"],["share","CAGR of % of GDP"]],v=>{cgM=v;drawCg()});drawCg();
+ toggle($("#rkMetric"),[["usd","Current US$"],["share","% of GDP"]],v=>{metric=v;drawRk()});
+ tabs($("#rkTabs"),["Global",...CONTS],v=>{rkSel=v;drawRk()});drawRk();
  drawKey();drawCont();drawSeg();
- tabs($("#mainTabs"),[["overview","개요"],["key","주요 국가"],["cont","대륙별"],["seg","이슈별 세그먼트"]],id=>{document.querySelectorAll("main>.pane").forEach(p=>p.classList.toggle("on",p.id==id));setTimeout(()=>window.dispatchEvent(new Event("resize")),50)});
+ tabs($("#mainTabs"),[["overview","Overview"],["key","Key Countries"],["cont","Continents"],["seg","Issue Segments"]],id=>{document.querySelectorAll("main>.pane").forEach(p=>p.classList.toggle("on",p.id==id));setTimeout(()=>window.dispatchEvent(new Event("resize")),50)});
  $("#bCsv").onclick=dlCsv;$("#bXls").onclick=dlXls;$("#bPdf").onclick=dlPdf;
 }
 function drawMap(){const z=C.map(c=>mapM=="usd"&&c.usd?Math.log10(c.usd):c[mapM]);
- Plotly.newPlot("map",[{type:"choropleth",locations:C.map(c=>c.iso3),z,text:C.map(c=>`${c.name}<br>${fmtP(c.share)}% · ${fmtUsd(c.usd)}B$`),hoverinfo:"text",colorscale:"YlGnBu",reversescale:false,colorbar:{title:mapM=="usd"?"log10 US$":"% GDP"}}],lay({margin:{t:0,r:0,b:0,l:0},geo:{showframe:false,projection:{type:"natural earth"},bgcolor:"rgba(0,0,0,0)"}}),{responsive:true})}
+ Plotly.newPlot("map",[{type:"choropleth",locations:C.map(c=>c.iso3),z,text:C.map(c=>`${c.name}<br>${fmtP(c.share)}% · ${fmtUsd(c.usd)}B$`),hoverinfo:"text",colorscale:"YlGnBu",reversescale:false,colorbar:{title:mapM=="usd"?"log10 US$":"% GDP"}}],lay({margin:{t:0,r:0,b:0,l:0},geo:{showframe:false,projection:{type:"natural earth"},bgcolor:"rgba(0,0,0,0)"}}),{responsive:true,topojsonURL:"lib/"})}
 function drawCg(){const ns=[5,10,15,20,25,30],key=cgM=="usd"?"cagr_usd":"cagr_share";
  const sel=["KOR","USA","CHN","DEU","JPN","VNM","IND"].filter(i=>BY[i]);
- Plotly.newPlot("cgBar",ns.map(n=>0).length?sel.map(i=>({type:"bar",name:BY[i].name,x:ns.map(n=>n+"년"),y:ns.map(n=>BY[i][key][n])})):[],lay({barmode:"group",yaxis:{title:"CAGR (%)"}}),{responsive:true});
- $("#cgTbl").innerHTML=`<tr><th>국가</th><th></th>${ns.map(n=>`<th>${n}년</th>`).join("")}</tr>`+C.filter(c=>c[key]["10"]!=null||c[key]["5"]!=null).sort((a,b)=>(b.usd||0)-(a.usd||0)).slice(0,60).map(c=>`<tr><td>${c.name}</td><td></td>${ns.map(n=>`<td>${cg(c[key][n])}</td>`).join("")}</tr>`).join("")}
-function drawRk(){let L=C.filter(c=>c[metric]!=null&&(rkSel=="글로벌"||c.continent==rkSel)).sort((a,b)=>b[metric]-a[metric]).slice(0,20);
- Plotly.newPlot("rkBar",[{type:"bar",orientation:"h",y:L.map(c=>c.name).reverse(),x:L.map(c=>metric=="usd"?c.usd/1e9:c.share).reverse(),marker:{color:"#1f6feb"}}],lay({margin:{t:10,r:10,b:40,l:140},xaxis:{title:metric=="usd"?"US$ 십억":"% of GDP"}}),{responsive:true});
- $("#rkTbl").innerHTML=`<tr><th>#</th><th>국가</th><th>비중(%)</th><th>금액(B$)</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td></tr>`).join("")}
+ Plotly.newPlot("cgBar",ns.map(n=>0).length?sel.map(i=>({type:"bar",name:BY[i].name,x:ns.map(n=>n+"Y"),y:ns.map(n=>BY[i][key][n])})):[],lay({barmode:"group",yaxis:{title:"CAGR (%)"}}),{responsive:true});
+ $("#cgTbl").innerHTML=`<tr><th>Country</th><th></th>${ns.map(n=>`<th>${n}Y</th>`).join("")}</tr>`+C.filter(c=>c[key]["10"]!=null||c[key]["5"]!=null).sort((a,b)=>(b.usd||0)-(a.usd||0)).slice(0,60).map(c=>`<tr><td>${c.name}</td><td></td>${ns.map(n=>`<td>${cg(c[key][n])}</td>`).join("")}</tr>`).join("")}
+function drawRk(){let L=C.filter(c=>c[metric]!=null&&(rkSel=="Global"||c.continent==rkSel)).sort((a,b)=>b[metric]-a[metric]).slice(0,20);
+ Plotly.newPlot("rkBar",[{type:"bar",orientation:"h",y:L.map(c=>c.name).reverse(),x:L.map(c=>metric=="usd"?c.usd/1e9:c.share).reverse(),marker:{color:"#1f6feb"}}],lay({margin:{t:10,r:10,b:40,l:140},xaxis:{title:metric=="usd"?"Current US$ (billions)":"% of GDP"}}),{responsive:true});
+ $("#rkTbl").innerHTML=`<tr><th>#</th><th>Country</th><th>% of GDP</th><th>US$ bn</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td></tr>`).join("")}
 function lineTraces(list){return list.filter(([i])=>BY[i]).map(([i,n])=>({type:"scatter",mode:"lines",name:n||BY[i].name,x:Object.keys(BY[i].ts),y:Object.values(BY[i].ts)}))}
-function cTable(list){return `<tr><th>국가</th><th></th><th>비중(%)</th><th>금액(B$)</th><th>5년</th><th>10년</th><th>20년</th><th>30년</th></tr>`+list.map(([i,n])=>{const c=BY[i];return c?`<tr><td>${n}</td><td></td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td>${[5,10,20,30].map(y=>`<td>${cg(c.cagr_usd[y])}</td>`).join("")}</tr>`:""}).join("")}
+function cTable(list){return `<tr><th>Country</th><th></th><th>% of GDP</th><th>US$ bn</th><th>5Y CAGR</th><th>10Y CAGR</th><th>20Y CAGR</th><th>30Y CAGR</th></tr>`+list.map(([i,n])=>{const c=BY[i];return c?`<tr><td>${n}</td><td></td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td>${[5,10,20,30].map(y=>`<td>${cg(c.cagr_usd[y])}</td>`).join("")}</tr>`:""}).join("")}
 function drawKey(){Plotly.newPlot("keyLine",lineTraces(KEY),lay({yaxis:{title:"% of GDP"}}),{responsive:true});
  $("#keyTbl").innerHTML=cTable(KEY);
  Plotly.newPlot("recLine",lineTraces(REC.map(r=>[r[0],r[1]])),lay({yaxis:{title:"% of GDP"}}),{responsive:true});
- $("#recList").innerHTML=REC.map(r=>`<p><b>${r[1]}</b> — ${r[2]}</p>`).join("")+`<p class="sub">※ 대만은 World Bank 통계에 없어 제외되었습니다.</p>`}
+ $("#recList").innerHTML=REC.map(r=>`<p><b>${r[1]}</b> — ${r[2]}</p>`).join("")+`<p class="sub">* Taiwan is not covered by World Bank data.</p>`}
 function stats(a){a=a.filter(x=>x!=null).sort((x,y)=>x-y);if(!a.length)return[null,null,0];const m=a.reduce((s,x)=>s+x,0)/a.length,h=a.length>>1;return[m,a.length%2?a[h]:(a[h-1]+a[h])/2,a.length]}
 function drawCont(){const S=CONTS.map(n=>[n,...stats(C.filter(c=>c.continent==n).map(c=>c.share))]);
- Plotly.newPlot("contBar",[{type:"bar",name:"평균",x:S.map(s=>s[0]),y:S.map(s=>s[1])},{type:"bar",name:"중앙값",x:S.map(s=>s[0]),y:S.map(s=>s[2])}],lay({barmode:"group",yaxis:{title:"% of GDP"}}),{responsive:true});
- $("#contTbl").innerHTML=`<tr><th>대륙</th><th></th><th>평균(%)</th><th>중앙값(%)</th><th>국가수</th></tr>`+S.map(s=>`<tr><td>${s[0]}</td><td></td><td>${fmtP(s[1])}</td><td>${fmtP(s[2])}</td><td>${s[3]}</td></tr>`).join("");
+ Plotly.newPlot("contBar",[{type:"bar",name:"Mean",x:S.map(s=>s[0]),y:S.map(s=>s[1])},{type:"bar",name:"Median",x:S.map(s=>s[0]),y:S.map(s=>s[2])}],lay({barmode:"group",yaxis:{title:"% of GDP"}}),{responsive:true});
+ $("#contTbl").innerHTML=`<tr><th>Continent</th><th></th><th>Mean (%)</th><th>Median (%)</th><th>Countries</th></tr>`+S.map(s=>`<tr><td>${s[0]}</td><td></td><td>${fmtP(s[1])}</td><td>${fmtP(s[2])}</td><td>${s[3]}</td></tr>`).join("");
  const sel=$("#contSel");sel.innerHTML=CONTS.map(c=>`<option>${c}</option>`).join("");sel.onchange=listCont;listCont()}
 function listCont(){const L=C.filter(c=>c.continent==$("#contSel").value).sort((a,b)=>(b.share??-1)-(a.share??-1));
- $("#contList").innerHTML=`<tr><th>#</th><th>국가</th><th>비중(%)</th><th>금액(B$)</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td></tr>`).join("")}
-function drawSeg(){const body=$("#segBody");body.innerHTML=SEGS.map((s,i)=>`<div class="seg ${i?'':'on'}" id="sg${i}"><div class="note"><b>왜 중요한가?</b> ${s[2]}</div>
+ $("#contList").innerHTML=`<tr><th>#</th><th>Country</th><th>% of GDP</th><th>US$ bn</th></tr>`+L.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${fmtP(c.share)}${st(c,"share")}</td><td>${fmtUsd(c.usd)}${st(c,"usd")}</td></tr>`).join("")}
+function drawSeg(){const body=$("#segBody");body.innerHTML=SEGS.map((s,i)=>`<div class="seg ${i?'':'on'}" id="sg${i}"><div class="note"><b>Why it matters</b> ${s[2]}</div>
  <div class="grid"><div id="sgBar${i}" style="height:380px"></div><div id="sgLine${i}" style="height:380px"></div></div><div class="card scroll"><table id="sgTbl${i}"></table></div></div>`).join("");
  tabs($("#segTabs"),SEGS.map((s,i)=>[i,s[0]]),i=>{document.querySelectorAll(".seg").forEach(e=>e.classList.toggle("on",e.id=="sg"+i));setTimeout(()=>window.dispatchEvent(new Event("resize")),50)});
  SEGS.forEach((s,i)=>{const L=s[1].map(x=>[x,BY[x]?.name]).filter(x=>x[1]);
@@ -131,15 +131,15 @@ function drawSeg(){const body=$("#segBody");body.innerHTML=SEGS.map((s,i)=>`<div
   $("#sgTbl"+i).innerHTML=cTable(L)})}
 function dlCsv(){const a=document.createElement("a");a.href="manufacturing_timeseries.csv";a.download="manufacturing_timeseries.csv";a.click()}
 function dlXls(){const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(C.map(c=>({ISO3:c.iso3,국가:c.name,대륙:c.continent,"비중(%GDP)":c.share,"금액(US$)":c.usd,...Object.fromEntries([5,10,15,20,25,30].map(n=>[`CAGR_${n}y(%)`,c.cagr_usd[n]]))}))),"latest");
- const rows=[];C.forEach(c=>Object.keys(c.ts).forEach(y=>rows.push({ISO3:c.iso3,국가:c.name,연도:+y,"비중(%GDP)":c.ts[y],"금액(US$)":c.ts_usd[y]})));
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(C.map(c=>({ISO3:c.iso3,Country:c.name,Continent:c.continent,"Manufacturing, value added (% of GDP)":c.share,"Manufacturing, value added (current US$)":c.usd,...Object.fromEntries([5,10,15,20,25,30].map(n=>[`CAGR_${n}y(%)`,c.cagr_usd[n]]))}))),"latest");
+ const rows=[];C.forEach(c=>Object.keys(c.ts).forEach(y=>rows.push({ISO3:c.iso3,Country:c.name,Year:+y,"Manufacturing, value added (% of GDP)":c.ts[y],"Manufacturing, value added (current US$)":c.ts_usd[y]})));
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"timeseries");XLSX.writeFile(wb,"manufacturing_value_added.xlsx")}
 function dlPdf(){const top=[...C].filter(c=>c.usd).sort((a,b)=>b.usd-a.usd).slice(0,20),S=CONTS.map(n=>[n,...stats(C.filter(c=>c.continent==n).map(c=>c.share))]);
  const t=(h,r)=>`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px"><tr>${h.map(x=>`<th style="border-bottom:1px solid #999;text-align:left">${x}</th>`).join("")}</tr>${r.map(x=>`<tr>${x.map(y=>`<td style="border-bottom:1px solid #ddd;padding:2px 0">${y}</td>`).join("")}</tr>`).join("")}</table>`;
- $("#report").innerHTML=`<h2>제조업 부가가치 분석 보고서</h2><p style="font-size:11px">기준연도 ${D.base_year} · 출처 World Bank WDI · 수집일 ${D.fetched.slice(0,10)}</p>
- <h3>상위 20개국 (US$ 기준)</h3>${t(["#","국가","금액(B$)","비중(%)","10년 CAGR"],top.map((c,i)=>[i+1,c.name,fmtUsd(c.usd),fmtP(c.share),c.cagr_usd["10"]??"–"]))}
- <h3>주요 7개국</h3>${t(["국가","비중(%)","금액(B$)","5년","10년","20년","30년"],KEY.map(([i,n])=>{const c=BY[i];return c?[n,fmtP(c.share),fmtUsd(c.usd),...[5,10,20,30].map(y=>c.cagr_usd[y]??"–")]:[n]}))}
- <h3>대륙별 평균·중앙값 (% of GDP)</h3>${t(["대륙","평균","중앙값","국가수"],S.map(s=>[s[0],fmtP(s[1]),fmtP(s[2]),s[3]]))}
- <h3>이슈별 세그먼트</h3>${SEGS.map(s=>`<p style="font-size:11px"><b>${s[0]}</b>: ${s[2]}</p>`).join("")}`;
+ $("#report").innerHTML=`<h2>Manufacturing, value added — Analysis report</h2><p style="font-size:11px">Base year ${D.base_year} · Source: World Bank WDI · Fetched ${D.fetched.slice(0,10)}</p>
+ <h3>Top 20 countries (current US$)</h3>${t(["#","Country","US$ bn","% of GDP","10Y CAGR"],top.map((c,i)=>[i+1,c.name,fmtUsd(c.usd),fmtP(c.share),c.cagr_usd["10"]??"–"]))}
+ <h3>Key countries</h3>${t(["Country","% of GDP","US$ bn","5Y","10Y","20Y","30Y"],KEY.map(([i,n])=>{const c=BY[i];return c?[n,fmtP(c.share),fmtUsd(c.usd),...[5,10,20,30].map(y=>c.cagr_usd[y]??"–")]:[n]}))}
+ <h3>Mean and median by continent (% of GDP)</h3>${t(["Continent","Mean","Median","Countries"],S.map(s=>[s[0],fmtP(s[1]),fmtP(s[2]),s[3]]))}
+ <h3>Issue Segments</h3>${SEGS.map(s=>`<p style="font-size:11px"><b>${s[0]}</b>: ${s[2]}</p>`).join("")}`;
  html2pdf().set({margin:10,filename:"manufacturing_report.pdf",html2canvas:{scale:2},jsPDF:{format:"a4"}}).from($("#report")).save()}
 </script></body></html>
