@@ -62,7 +62,7 @@ select,.toggle button{font:inherit;padding:4px 8px;border:1px solid var(--line);
 </main>
 
 <div id="badge"><button id="bCsv">⬇ CSV</button><button id="bXls">⬇ Excel</button><button id="bPdf">⬇ Report PDF</button></div>
-<div id="report" style="position:absolute;left:-9999px;width:760px;background:#fff;color:#111;padding:20px"></div>
+<div style="position:fixed;left:-99999px;top:0"><div id="report"></div></div>
 
 <script>
 const KEY=[["KOR","Korea, Rep."],["USA","United States"],["CHN","China"],["FRA","France"],["DEU","Germany"],["GBR","United Kingdom"],["JPN","Japan"]];
@@ -135,11 +135,13 @@ function dlXls(){const wb=XLSX.utils.book_new();
  const rows=[];C.forEach(c=>Object.keys(c.ts).forEach(y=>rows.push({ISO3:c.iso3,Country:c.name,Year:+y,"Manufacturing, value added (% of GDP)":c.ts[y],"Manufacturing, value added (current US$)":c.ts_usd[y]})));
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"timeseries");XLSX.writeFile(wb,"manufacturing_value_added.xlsx")}
 function dlPdf(){const top=[...C].filter(c=>c.usd).sort((a,b)=>b.usd-a.usd).slice(0,20),S=CONTS.map(n=>[n,...stats(C.filter(c=>c.continent==n).map(c=>c.share))]);
- const t=(h,r)=>`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px"><tr>${h.map(x=>`<th style="border-bottom:1px solid #999;text-align:left">${x}</th>`).join("")}</tr>${r.map(x=>`<tr>${x.map(y=>`<td style="border-bottom:1px solid #ddd;padding:2px 0">${y}</td>`).join("")}</tr>`).join("")}</table>`;
+ const t=(h,r)=>`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;table-layout:auto"><tr>${h.map((x,i)=>`<th style="border-bottom:1px solid #999;text-align:${x=="Country"||x=="Continent"||x=="#"?"left":"right"};padding:2px 4px">${x}</th>`).join("")}</tr>${r.map(x=>`<tr>${x.map((y,i)=>`<td style="border-bottom:1px solid #ddd;padding:2px 4px;text-align:${h[i]=="Country"||h[i]=="Continent"||h[i]=="#"?"left":"right"}">${y}</td>`).join("")}</tr>`).join("")}</table>`;
  $("#report").innerHTML=`<h2>Manufacturing, value added — Analysis report</h2><p style="font-size:11px">Base year ${D.base_year} · Source: World Bank WDI · Fetched ${D.fetched.slice(0,10)}</p>
  <h3>Top 20 countries (current US$)</h3>${t(["#","Country","US$ bn","% of GDP","10Y CAGR"],top.map((c,i)=>[i+1,c.name,fmtUsd(c.usd),fmtP(c.share),c.cagr_usd["10"]??"–"]))}
  <h3>Key countries</h3>${t(["Country","% of GDP","US$ bn","5Y","10Y","20Y","30Y"],KEY.map(([i,n])=>{const c=BY[i];return c?[n,fmtP(c.share),fmtUsd(c.usd),...[5,10,20,30].map(y=>c.cagr_usd[y]??"–")]:[n]}))}
  <h3>Mean and median by continent (% of GDP)</h3>${t(["Continent","Mean","Median","Countries"],S.map(s=>[s[0],fmtP(s[1]),fmtP(s[2]),s[3]]))}
  <h3>Issue Segments</h3>${SEGS.map(s=>`<p style="font-size:11px"><b>${s[0]}</b>: ${s[2]}</p>`).join("")}`;
- html2pdf().set({margin:10,filename:"manufacturing_report.pdf",html2canvas:{scale:2},jsPDF:{format:"a4"}}).from($("#report")).save()}
+ const el=$("#report");el.style.cssText="width:700px;background:#fff;color:#111;padding:20px;font-family:'Noto Sans KR','Malgun Gothic',sans-serif";/* must stay static-positioned: html2pdf copies inline style onto its clone */
+ const done=()=>{el.innerHTML=""};
+ html2pdf().set({margin:10,filename:"manufacturing_report.pdf",image:{type:"jpeg",quality:.95},html2canvas:{scale:2,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4"},pagebreak:{mode:["css","legacy"]}}).from(el).save().then(done,e=>{done();alert("PDF error: "+e.message)})}
 </script></body></html>
