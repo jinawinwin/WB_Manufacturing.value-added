@@ -102,9 +102,10 @@ if __name__ == "__main__":
     (ROOT / "docs").mkdir(parents=True, exist_ok=True)
     (ROOT / "docs/data.json").write_text(json.dumps(out, ensure_ascii=False))
     rows = [{k: c[k] for k in ("iso3", "name", "continent", "region", "share", "usd")} |
-            {f"cagr_usd_{n}y": c["cagr_usd"][str(n)] for n in CAGR_YEARS} for c in out["countries"]]
+            {f"cagr_usd_{n}y": c["cagr_usd"][str(n)] for n in CAGR_YEARS} | {"source": "World Bank WDI: NV.IND.MANF.ZS, NV.IND.MANF.CD", "retrieved": out["fetched"][:10]} for c in out["countries"]]
     pd.DataFrame(rows).to_csv(ROOT / "docs/manufacturing_latest.csv", index=False, encoding="utf-8-sig")
     long = [{"iso3": c["iso3"], "name": c["name"], "year": int(y), "share_pct_gdp": s, "usd": c["ts_usd"].get(y)}
             for c in out["countries"] for y, s in c["ts"].items()]
+    for r in long: r["source"] = "World Bank WDI: NV.IND.MANF.ZS, NV.IND.MANF.CD"; r["retrieved"] = out["fetched"][:10]
     pd.DataFrame(long).to_csv(ROOT / "docs/manufacturing_timeseries.csv", index=False, encoding="utf-8-sig")
     print(f"base year {out['base_year']}, {len(out['countries'])} countries")

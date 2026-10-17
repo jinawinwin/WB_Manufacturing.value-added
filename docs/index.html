@@ -9,7 +9,7 @@
 @media(prefers-color-scheme:dark){:root{--bg:#10151c;--card:#18202a;--ink:#e8edf3;--mut:#93a0b1;--acc:#5aa2ff;--line:#2a3441}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
 header{padding:20px 16px 8px;max-width:1200px;margin:auto}h1{margin:0;font-size:22px}.sub{color:var(--mut);font-size:12px}
-main{max-width:1200px;margin:auto;padding:0 16px 90px}
+main{max-width:1200px;margin:auto;padding:0 16px 20px}
 .tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:12px 0}
 .tab{padding:8px 14px;border:0;background:none;color:var(--mut);cursor:pointer;font:inherit;border-bottom:2px solid transparent}
 .tab.on{color:var(--acc);border-color:var(--acc);font-weight:600}.sub-tabs .tab{font-size:13px;padding:6px 10px}
@@ -61,6 +61,7 @@ select,.toggle button{font:inherit;padding:4px 8px;border:1px solid var(--line);
 </section>
 </main>
 
+<footer style="max-width:1200px;margin:0 auto;padding:0 16px 90px;color:var(--mut);font-size:12px"><b>Sources.</b> Data: World Bank, World Development Indicators (WDI) — <i>Manufacturing, value added (% of GDP)</i> NV.IND.MANF.ZS; <i>Manufacturing, value added (current US$)</i> NV.IND.MANF.CD. Underlying data: World Bank national accounts data and OECD National Accounts data files (World Bank Open Data, licence CC BY-4.0). Continents: pycountry-convert. Map: Natural Earth (public domain) via Plotly.js (sane-topojson).</footer>
 <div id="badge"><button id="bCsv">⬇ CSV</button><button id="bXls">⬇ Excel</button><button id="bPdf">⬇ Report PDF</button></div>
 <div style="position:fixed;left:-99999px;top:0"><div id="report"></div></div>
 
@@ -79,6 +80,9 @@ const SEGS=[
 ["Asian Financial & Trade Hubs",["SGP","HKG","MAC","ARE","MYS","JPN","KOR","THA","VNM"],"싱가포르·홍콩 등은 무역금융과 물류의 중계 거점이다. 제조업 비중은 낮아도 한국 기업의 아시아 역내 조달·결제·재수출 전략에서 핵심 역할을 한다."],
 ["Resources, Energy & Raw Materials",["SAU","RUS","AUS","BRA","CAN","IDN","CHL","ZAF","KAZ","NOR"],"원자재 수출국은 제조업 비중이 낮은 편이지만 에너지·광물 가격과 공급을 좌우한다. 한국의 제조 원가와 배터리·철강 등 소재 조달 안정성에 직접 영향을 준다."],
 ["Global South",["IND","BRA","ZAF","IDN","MEX","TUR","EGY","NGA","ARG","SAU"],"글로벌 사우스는 성장 시장이자 지정학적 균형추다. 제조업 기반 확대 속도에 따라 한국 수출 신시장과 산업 협력 파트너로서의 중요도가 커지고 있다."]];
+const PAGE="https://jinawinwin.github.io/WB_Manufacturing.value-added/",SRC_SHORT="Source: World Bank WDI (NV.IND.MANF.ZS, NV.IND.MANF.CD)",
+srcLine=()=>`${SRC_SHORT} · Retrieved ${D.fetched.slice(0,10)} · Dashboard: ${PAGE}`,
+MAPCRED="Map: Natural Earth (public domain), via Plotly.js world_110m topojson (sane-topojson)";
 const CONTS=["Asia","Europe","North America","South America","Africa","Oceania"];
 let D,C,BY,metric="usd",mapM="share",cgM="usd",rkSel="Global";
 const st=(c,k)=>c["ref_"+k]&&c["ref_"+k]!==D.base_year?`<sup title="${c["ref_"+k]} value">*</sup>`:"",$=s=>document.querySelector(s),fmtUsd=v=>v==null?"–":(v/1e9).toFixed(1),fmtP=v=>v==null?"–":v.toFixed(2),
@@ -129,19 +133,20 @@ function drawSeg(){const body=$("#segBody");body.innerHTML=SEGS.map((s,i)=>`<div
   Plotly.newPlot("sgBar"+i,[{type:"bar",x:L.map(x=>x[1]),y:L.map(x=>BY[x[0]].share),marker:{color:"#1f6feb"}}],lay({yaxis:{title:"% of GDP ("+D.base_year+")"}}),{responsive:true});
   Plotly.newPlot("sgLine"+i,lineTraces(L),lay({yaxis:{title:"% of GDP"}}),{responsive:true});
   $("#sgTbl"+i).innerHTML=cTable(L)})}
-function dlCsv(){const a=document.createElement("a");a.href="manufacturing_timeseries.csv";a.download="manufacturing_timeseries.csv";a.click()}
+function rowsAll(){const r=[];C.forEach(c=>Object.keys(c.ts).forEach(y=>r.push({ISO3:c.iso3,Country:c.name,Continent:c.continent,Year:+y,"Manufacturing, value added (% of GDP)":c.ts[y],"Manufacturing, value added (current US$)":c.ts_usd[y],Source:"World Bank WDI: NV.IND.MANF.ZS, NV.IND.MANF.CD","Retrieved":D.fetched.slice(0,10)})));return r}
+function dlCsv(){const ws=XLSX.utils.json_to_sheet(rowsAll()),csv="\ufeff"+XLSX.utils.sheet_to_csv(ws),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="manufacturing_value_added_WB-WDI.csv";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function dlXls(){const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(C.map(c=>({ISO3:c.iso3,Country:c.name,Continent:c.continent,"Manufacturing, value added (% of GDP)":c.share,"Manufacturing, value added (current US$)":c.usd,...Object.fromEntries([5,10,15,20,25,30].map(n=>[`CAGR_${n}y(%)`,c.cagr_usd[n]]))}))),"latest");
- const rows=[];C.forEach(c=>Object.keys(c.ts).forEach(y=>rows.push({ISO3:c.iso3,Country:c.name,Year:+y,"Manufacturing, value added (% of GDP)":c.ts[y],"Manufacturing, value added (current US$)":c.ts_usd[y]})));
- XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"timeseries");XLSX.writeFile(wb,"manufacturing_value_added.xlsx")}
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(C.map(c=>({ISO3:c.iso3,Country:c.name,Continent:c.continent,"Manufacturing, value added (% of GDP)":c.share,"Manufacturing, value added (current US$)":c.usd,Source:"World Bank WDI: NV.IND.MANF.ZS, NV.IND.MANF.CD",...Object.fromEntries([5,10,15,20,25,30].map(n=>[`CAGR_${n}y(%)`,c.cagr_usd[n]]))}))),"latest");
+ const rows=rowsAll();
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"timeseries");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Source"],["World Bank, World Development Indicators (WDI)"],["Manufacturing, value added (% of GDP): NV.IND.MANF.ZS"],["Manufacturing, value added (current US$): NV.IND.MANF.CD"],["Licence: CC BY-4.0 (World Bank Open Data)"],["Retrieved: "+D.fetched.slice(0,10)],["Base year: "+D.base_year+" (* = latest value within 5 years where base year is not published)"],["Dashboard: "+PAGE]]),"Source");XLSX.writeFile(wb,"manufacturing_value_added_WB-WDI.xlsx")}
 function dlPdf(){const top=[...C].filter(c=>c.usd).sort((a,b)=>b.usd-a.usd).slice(0,20),S=CONTS.map(n=>[n,...stats(C.filter(c=>c.continent==n).map(c=>c.share))]);
  const t=(h,r)=>`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;table-layout:auto"><tr>${h.map((x,i)=>`<th style="border-bottom:1px solid #999;text-align:${x=="Country"||x=="Continent"||x=="#"?"left":"right"};padding:2px 4px">${x}</th>`).join("")}</tr>${r.map(x=>`<tr>${x.map((y,i)=>`<td style="border-bottom:1px solid #ddd;padding:2px 4px;text-align:${h[i]=="Country"||h[i]=="Continent"||h[i]=="#"?"left":"right"}">${y}</td>`).join("")}</tr>`).join("")}</table>`;
  $("#report").innerHTML=`<h2>Manufacturing, value added — Analysis report</h2><p style="font-size:11px">Base year ${D.base_year} · Source: World Bank WDI · Fetched ${D.fetched.slice(0,10)}</p>
  <h3>Top 20 countries (current US$)</h3>${t(["#","Country","US$ bn","% of GDP","10Y CAGR"],top.map((c,i)=>[i+1,c.name,fmtUsd(c.usd),fmtP(c.share),c.cagr_usd["10"]??"–"]))}
  <h3>Key countries</h3>${t(["Country","% of GDP","US$ bn","5Y","10Y","20Y","30Y"],KEY.map(([i,n])=>{const c=BY[i];return c?[n,fmtP(c.share),fmtUsd(c.usd),...[5,10,20,30].map(y=>c.cagr_usd[y]??"–")]:[n]}))}
  <h3>Mean and median by continent (% of GDP)</h3>${t(["Continent","Mean","Median","Countries"],S.map(s=>[s[0],fmtP(s[1]),fmtP(s[2]),s[3]]))}
- <h3>Issue Segments</h3>${SEGS.map(s=>`<p style="font-size:11px"><b>${s[0]}</b>: ${s[2]}</p>`).join("")}`;
+ <h3>Issue Segments</h3>${SEGS.map(s=>`<p style="font-size:11px"><b>${s[0]}</b>: ${s[2]}</p>`).join("")}<p style="font-size:10px;color:#555;margin-top:14px;border-top:1px solid #ccc;padding-top:6px"><b>Sources.</b> ${srcLine()}<br>World Bank, World Development Indicators — Manufacturing, value added (% of GDP) NV.IND.MANF.ZS and (current US$) NV.IND.MANF.CD. Licence CC BY-4.0. * = latest value within 5 years where base year is not published.<br>${MAPCRED}</p>`;
  const el=$("#report");el.style.cssText="width:700px;background:#fff;color:#111;padding:20px;font-family:'Noto Sans KR','Malgun Gothic',sans-serif";/* must stay static-positioned: html2pdf copies inline style onto its clone */
  const done=()=>{el.innerHTML=""};
- html2pdf().set({margin:10,filename:"manufacturing_report.pdf",image:{type:"jpeg",quality:.95},html2canvas:{scale:2,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4"},pagebreak:{mode:["css","legacy"]}}).from(el).save().then(done,e=>{done();alert("PDF error: "+e.message)})}
+ html2pdf().set({margin:10,filename:"manufacturing_report.pdf",image:{type:"jpeg",quality:.95},html2canvas:{scale:2,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4"},pagebreak:{mode:["css","legacy"]}}).from(el).toPdf().get("pdf").then(pdf=>{const n=pdf.internal.getNumberOfPages(),W=pdf.internal.pageSize.getWidth(),H=pdf.internal.pageSize.getHeight();for(let i=1;i<=n;i++){pdf.setPage(i);pdf.saveGraphicsState();pdf.setGState(new pdf.GState({opacity:.10}));pdf.setTextColor(31,111,235);pdf.setFont("helvetica","bold");pdf.setFontSize(34);pdf.text("Source: World Bank WDI",W/2,H/2-8,{angle:35,align:"center"});pdf.setFontSize(18);pdf.text("NV.IND.MANF.ZS / NV.IND.MANF.CD",W/2,H/2+8,{angle:35,align:"center"});pdf.restoreGraphicsState();pdf.setTextColor(90,90,90);pdf.setFont("helvetica","normal");pdf.setFontSize(7);pdf.text(srcLine()+"  ·  Page "+i+"/"+n,10,H-6,{maxWidth:W-20})}}).save().then(done,e=>{done();alert("PDF error: "+e.message)})}
 </script></body></html>
